@@ -1,4 +1,4 @@
-# YoloBit_Project
+# XT2_Project
 
 # Requirement to run the package
 ```bash
