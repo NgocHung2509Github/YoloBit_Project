@@ -30,6 +30,7 @@ Usage - formats:
 
 import argparse
 import os
+import random
 import platform
 import sys
 import paho.mqtt.client as mqtt
@@ -55,14 +56,19 @@ from utils.torch_utils import select_device, smart_inference_mode
 MQTT_SERVER = "io.adafruit.com"
 MQTT_PORT = 1883
 MQTT_USERNAME = "HauNg"
-MQTT_PASSWORD = "aio_FDcf22LE6i9EcOHvNGVT8IH3YOMY"
-MQTT_FEED= "HauNg/feeds/ten"
-
+MQTT_PASSWORD = "aio_oApB13qNepS5ANhOQL02Z1HHLB05"
+MQTT_FEED1= "HauNg/feeds/ten"
+MQTT_FEED2= "HauNg/feeds/nutnhan2"
+MQTT_FEED3= "HauNg/feeds/cambien1"
+MQTT_FEED4= "HauNg/feeds/xacnhan"
 
 
 
 def mqtt_connected(client, userdata, flags, rc):
-    client.subscribe(MQTT_FEED)
+    client.subscribe(MQTT_FEED1)
+    client.subscribe(MQTT_FEED2)
+    client.subscribe(MQTT_FEED3)
+    client.subscribe(MQTT_FEED4)
     print("Connected succesfully!!")
 
 
@@ -72,6 +78,10 @@ def mqtt_subscribed(client, userdata, mid, granted_qos):
 def disconnected(client):
     print("Ngat ket noi ...")
     sys.exit (1)
+def on_message(client, userdata, msg):
+	if msg.topic==MQTT_FEED3:
+		re=str(msg.payload.decode())
+
 
 
 #Register mqtt events
@@ -83,6 +93,7 @@ mqttClient.connect(MQTT_SERVER, MQTT_PORT, 60)
 mqttClient.on_connect = mqtt_connected
 mqttClient.on_disconnect = disconnected
 mqttClient.on_subscribe = mqtt_subscribed
+mqttClient.on_message= on_message
 
 
 mqttClient.loop_start()
@@ -216,14 +227,14 @@ def run(
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
             #Stream results
-            # im0 = annotator.result()
-            # if view_img:
-            #     if platform.system() == 'Linux' and p not in windows:
-            #         windows.append(p)
-            #         cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-            #         cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
-            #     cv2.imshow(str(p), im0)
-            #     cv2.waitKey(1)  # 1 millisecond
+            im0 = annotator.result()
+            if view_img:
+                if platform.system() == 'Linux' and p not in windows:
+                    windows.append(p)
+                    cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+                    cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
+                cv2.imshow(str(p), im0)
+                cv2.waitKey(1)  # 1 millisecond
 
             # Save results (image with detections)
             if save_img:
@@ -245,17 +256,22 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
-        # LOGGER.info(f"{s} ")
+        #LOGGER.info(f"{s} ")
         
 
 
 
         count+=1
-        if count%10==0:
+        if count==20:
         	if(s=="hau" or s=="hung" or s== "An"):
-        		mqttClient.publish(MQTT_FEED, s)
+        		mqttClient.publish(MQTT_FEED1, s)
+        		mqttClient.publish(MQTT_FEED4,1)
+        		
         	else:
-        		mqttClient.publish(MQTT_FEED, "None")
+        		mqttClient.publish(MQTT_FEED1, "None")
+        		mqttClient.publish(MQTT_FEED4,0)
+        	temp= random.randint(0,1)
+        	mqttClient.publish(MQTT_FEED2,temp)
         	print("Published!")
         	count=0
 
