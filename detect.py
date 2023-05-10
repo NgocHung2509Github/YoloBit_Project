@@ -56,7 +56,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 MQTT_SERVER = "io.adafruit.com"
 MQTT_PORT = 1883
 MQTT_USERNAME = "HauNg"
-MQTT_PASSWORD = "aio_ctOS65zCAuGy97TuC8JvXzxueOeR"
+MQTT_PASSWORD = "aio_lHzG98qrhUkWJ8L44IBA69VSnpGH"
 MQTT_FEED1= "HauNg/feeds/ten"
 MQTT_FEED2= "HauNg/feeds/nutnhan2"
 MQTT_FEED3= "HauNg/feeds/cambien1"
@@ -170,9 +170,10 @@ def run(
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
     count=0
     ##################################
+    print("Waiting for level 1 authentication")
     while(not Auth):
         pass
-
+    print("Pass level 1 authentication")
     ##################################
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
@@ -270,7 +271,7 @@ def run(
                 mqttClient.publish(MQTT_FEED4,2)
             else:
                 mqttClient.publish(MQTT_FEED1, "None")
-                mqttClient.publish(MQTT_FEED4,0)
+                #mqttClient.publish(MQTT_FEED4,0)
             print("Published!")
             count=0
 
