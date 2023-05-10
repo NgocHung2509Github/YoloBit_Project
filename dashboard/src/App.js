@@ -7,6 +7,18 @@ import './App.css';
 
 function App() {
 
+  const [fanSwitch, setFanSwitch] = useState(false);
+
+  const handleFanSwitchChange = (event) => {
+    setFanSwitch(event.target.checked);
+
+    fetch('/switch', {
+      method: 'POST',
+      body: event.target.checked ? "1" : "0"
+    });
+  };
+
+
   return (
     <>
     <div className="container-fluid h-100">  
@@ -14,7 +26,7 @@ function App() {
         <div className="col-md-2 p-4">
           <div className="d-flex align-items-center mb-4">
               <Dashboard sx={{mr: 1, fontSize: 36, color: '#fff'}}/>
-              <Typography variant="h5" sx={{color: '#fff'}}>Dashboard</Typography>
+              <Typography variant="h5" sx={{mr: 1, color: '#fff'}}>Dashboard</Typography>
           </div>
         </div>
       </div>
@@ -24,19 +36,29 @@ function App() {
           <Card sx={{mb: 2}}>
               <CardHeader title="Fan" sx={{justifyContent: 'center'}}/>
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
-                <MySwitch />
+                <FormControlLabel
+                  value = "fan_switch"
+                  control = {<MySwitch id = "fan-switch" checked={fanSwitch} onChange={handleFanSwitchChange} />}
+                  label=""
+                  labelPlacement="bottom"
+                />
               </CardContent>
             </Card>
             <Card sx={{mb: 2}}>
               <CardHeader title="Light" sx={{justifyContent: 'center'}}/>
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
-                <MySwitch />
+                <FormControlLabel
+                  value = "light_switch"
+                  control = {<MySwitch />}
+                  label=""
+                  labelPlacement="bottom"
+                />
               </CardContent>
             </Card>
             <Card sx={{mb: 4}}>
               <CardHeader title="Temperature" sx={{justifyContent: 'center'}}/>
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
-                <TemperatureGauge temperature={40} />
+                <TemperatureGauge temperature={25} />
               </CardContent>
             </Card>
         </div>
