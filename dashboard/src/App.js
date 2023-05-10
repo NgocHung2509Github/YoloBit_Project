@@ -8,13 +8,33 @@ import './App.css';
 function App() {
 
   const [fanSwitch, setFanSwitch] = useState(false);
+  const [lightSwitch, setLightSwitch] = useState(false);
 
   const handleFanSwitchChange = (event) => {
     setFanSwitch(event.target.checked);
 
-    fetch('/switch', {
+    fetch('/fanswitch/', {
       method: 'POST',
-      body: event.target.checked ? "1" : "0"
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fan_switch: event.target.checked ? 1 : 0
+      })
+    });
+  };
+
+  const handleLightSwitchChange = (event) => {
+    setLightSwitch(event.target.checked);
+
+    fetch('/lightswitch/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        light_switch: event.target.checked ? 1 : 0
+      })
     });
   };
 
@@ -49,7 +69,7 @@ function App() {
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
                 <FormControlLabel
                   value = "light_switch"
-                  control = {<MySwitch />}
+                  control = {<MySwitch id = "light-switch" checked={lightSwitch} onChange={handleLightSwitchChange} />}
                   label=""
                   labelPlacement="bottom"
                 />
