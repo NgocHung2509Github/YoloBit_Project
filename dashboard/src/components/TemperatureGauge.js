@@ -8,12 +8,9 @@ function CircularProgressWithLabel(props) {
       style={{
         position: 'relative',
         display: 'inline-block',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '50%',
-        padding: '10px',
       }}
     >
-      <CircularProgress variant="determinate" value={value} {...props} sx={{ color: '#0E8388', thickness: 4 }} />
+      <CircularProgress variant="determinate" value={value} {...props} sx={{ color: '#0E8388', thickness: 5 }} />
       <Typography
         variant="h5"
         component="div"
@@ -27,7 +24,7 @@ function CircularProgressWithLabel(props) {
 
 function TemperatureGauge({ temperature }) {
   const maxTemperature = 60;
-  const threshold = 70;
+  const threshold = 50;
 
   // Convert Celsius to a 0 to 60 scale
   const value = (temperature / maxTemperature) * 100;
