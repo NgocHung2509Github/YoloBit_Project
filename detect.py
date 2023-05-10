@@ -56,11 +56,12 @@ from utils.torch_utils import select_device, smart_inference_mode
 MQTT_SERVER = "io.adafruit.com"
 MQTT_PORT = 1883
 MQTT_USERNAME = "HauNg"
-MQTT_PASSWORD = "aio_oApB13qNepS5ANhOQL02Z1HHLB05"
+MQTT_PASSWORD = "aio_ctOS65zCAuGy97TuC8JvXzxueOeR"
 MQTT_FEED1= "HauNg/feeds/ten"
 MQTT_FEED2= "HauNg/feeds/nutnhan2"
 MQTT_FEED3= "HauNg/feeds/cambien1"
 MQTT_FEED4= "HauNg/feeds/xacnhan"
+Auth = 0
 
 
 
@@ -79,8 +80,9 @@ def disconnected(client):
     print("Ngat ket noi ...")
     sys.exit (1)
 def on_message(client, userdata, msg):
-	if msg.topic==MQTT_FEED3:
-		re=str(msg.payload.decode())
+    if (msg.topic==MQTT_FEED4) :
+        global Auth
+        Auth=str(msg.payload.decode())
 
 
 
@@ -167,6 +169,11 @@ def run(
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
     count=0
+    ##################################
+    while(not Auth):
+        pass
+
+    ##################################
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -254,26 +261,18 @@ def run(
                         save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
-
         # Print time (inference-only)
         #LOGGER.info(f"{s} ")
-        
-
-
-
         count+=1
         if count==20:
-        	if(s=="hau" or s=="hung" or s== "An"):
-        		mqttClient.publish(MQTT_FEED1, s)
-        		mqttClient.publish(MQTT_FEED4,1)
-        		
-        	else:
-        		mqttClient.publish(MQTT_FEED1, "None")
-        		mqttClient.publish(MQTT_FEED4,0)
-        	temp= random.randint(0,1)
-        	mqttClient.publish(MQTT_FEED2,temp)
-        	print("Published!")
-        	count=0
+            if(s in ["hau","hung","An"]):
+                mqttClient.publish(MQTT_FEED1,s)
+                mqttClient.publish(MQTT_FEED4,2)
+            else:
+                mqttClient.publish(MQTT_FEED1, "None")
+                mqttClient.publish(MQTT_FEED4,0)
+            print("Published!")
+            count=0
 
 
 
