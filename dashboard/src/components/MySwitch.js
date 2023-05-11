@@ -13,7 +13,7 @@ const MySwitch = styled((props) => (
       transitionDuration: '300ms',
       '&.Mui-checked': {
         transform: 'translateX(32px)',
-        color: '#fff',
+        color: '#CBE4DE',
         '& + .MuiSwitch-track': {
           backgroundColor: theme.palette.mode === 'dark' ? '#0E8388' : '#2b7e82',
           opacity: 1,
@@ -44,7 +44,7 @@ const MySwitch = styled((props) => (
     },
     '& .MuiSwitch-track': {
       borderRadius: 52 / 2,
-      backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
+      backgroundColor: theme.palette.mode === 'light' ? '#CBE4DE' : '#39393D',
       opacity: 1,
       transition: theme.transitions.create(['background-color'], {
         duration: 500,

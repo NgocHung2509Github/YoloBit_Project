@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #add api config and rest_framework
     'api.apps.ApiConfig',
     'rest_framework'
 ]
@@ -120,6 +121,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# join dashboard's build to integrate reactjs
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'dashboard/build/static'),
     ]
