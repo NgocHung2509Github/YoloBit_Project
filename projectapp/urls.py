@@ -20,7 +20,11 @@ from api import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # when data send to the endpoints, call the functions in views.py
     path('fanswitch/', views.FanSwitchView.as_view(), name='fanswitch'),
     path('lightswitch/', views.LightSwitchView.as_view(), name='lightswitch'),
+    path('temperature/', views.TemperatureView.as_view(), name='temperature'),
+    path('status/', views.DetectView.as_view(), name='status'),
+    path('name/', views.NameView.as_view(), name='name'),
     path('', views.index, name='index')
 ]

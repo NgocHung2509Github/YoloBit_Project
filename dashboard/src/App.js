@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Switch, FormControlLabel, Card, CardHeader, CardContent, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { FormControlLabel, Card, CardHeader, CardContent, Typography } from '@mui/material';
 import { Dashboard } from '@mui/icons-material';
 import TemperatureGauge from './components/TemperatureGauge';
 import MySwitch from './components/MySwitch';
@@ -9,6 +9,9 @@ function App() {
 
   const [fanSwitch, setFanSwitch] = useState(false);
   const [lightSwitch, setLightSwitch] = useState(false);
+  const [temperature, setTemperature] = useState(0);
+  const [status, setStatus] = useState("Block");
+  const [name, setName] = useState("None");
 
   const handleFanSwitchChange = (event) => {
     setFanSwitch(event.target.checked);
@@ -38,6 +41,33 @@ function App() {
     });
   };
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetch('/temperature/')
+        .then(response => response.json())
+        .then(data => {
+          setTemperature(data.temperature);
+        })
+        .catch(error => console.error(error));
+
+      fetch('/status/')
+        .then(response => response.json())
+        .then(data => {
+          setStatus(data.detectstatus);
+        })
+        .catch(error => console.error(error));
+
+      fetch('/name/')
+        .then(response => response.json())
+        .then(data => {
+          setName(data.detectname);
+        })
+        .catch(error => console.error(error));
+
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <>
@@ -53,8 +83,8 @@ function App() {
       <div className="row">
         <div className="col-md-2 p-4"></div>
         <div className="col-md-4 pt-5 ps-5 pe-5">
-          <Card sx={{mb: 2}}>
-              <CardHeader title="Fan" sx={{justifyContent: 'center'}}/>
+          <Card sx={{mb: 2, backgroundColor: '#3c4141'}}>
+              <CardHeader title="Fan" sx={{color: 'white', justifyContent: 'center'}}/>
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
                 <FormControlLabel
                   value = "fan_switch"
@@ -64,8 +94,8 @@ function App() {
                 />
               </CardContent>
             </Card>
-            <Card sx={{mb: 2}}>
-              <CardHeader title="Light" sx={{justifyContent: 'center'}}/>
+            <Card sx={{mb: 2, backgroundColor: '#3c4141'}}>
+              <CardHeader title="Light" sx={{color: 'white', justifyContent: 'center'}}/>
               <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
                 <FormControlLabel
                   value = "light_switch"
@@ -75,34 +105,32 @@ function App() {
                 />
               </CardContent>
             </Card>
-            <Card sx={{mb: 4}}>
-              <CardHeader title="Temperature" sx={{justifyContent: 'center'}}/>
-              <CardContent sx={{display: 'flex', justifyContent: 'center'}}>
-                <TemperatureGauge temperature={25} />
+            <Card sx={{mb: 3, backgroundColor: '#3c4141'}}>
+              <CardHeader title="Temperature" sx={{color: 'white', justifyContent: 'center'}}/>
+              <CardContent sx={{color: 'white', display: 'flex', justifyContent: 'center'}}>
+                <TemperatureGauge temperature={temperature} />
               </CardContent>
             </Card>
         </div>
         <div className="col-md-6 pt-5 ps-5 pe-5">
-          <Card sx={{mb: 2}}>
-            <CardHeader title="Camera" sx={{color: 'black'}}/>
-            <CardContent sx={{display: 'block', justifyContent: 'center'}}>
-              [Add your picture here]
-            </CardContent>
-          </Card>
-          <Card sx={{mb: 2}}>
-            <CardHeader title="Status" sx={{color: 'black'}}/>
+          <Card sx={{mb: 2, backgroundColor: '#3c4141'}}>
+            <CardHeader title="Status" sx={{color: 'white'}}/>
             <CardContent sx={{height: '100%'}}>
-              <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                <Typography variant="h6" component="span">Owner</Typography>
+              <div className="d-flex flex-column justify-content-center align-items-center h-100 p-4">
+                <strong>
+                  <Typography variant="h3" component="span" className={status === 'Allow' ? 'green-text' : 'red-text'}>{'>>' + status + '<<'}</Typography>
+                </strong>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader title="Text Log" sx={{backgroundColor: 'gray', color: 'white'}}/>
-            <CardContent sx={{height: '100%'}}>
-              <Typography variant="body1" sx={{height: '100%', display: 'flex', alignItems: 'center'}}>
-                [Add your text log here]
-              </Typography>
+          <Card sx={{mb: 4, backgroundColor: '#3c4141'}}>
+            <CardHeader title="Name" sx={{color: 'white'}}/>
+              <CardContent sx={{height: '100%'}}>
+                <div className="d-flex flex-column justify-content-center align-items-center h-100 p-4">
+                  <strong>
+                    <Typography variant="h3" component="span" sx={{color: 'white'}}>{name}</Typography>
+                  </strong>
+              </div>
             </CardContent>
           </Card>
         </div>
