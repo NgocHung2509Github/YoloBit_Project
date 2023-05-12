@@ -30,8 +30,11 @@ Usage - formats:
 
 import argparse
 import os
+import random
 import platform
 import sys
+import paho.mqtt.client as mqtt
+import base64
 from pathlib import Path
 
 import torch
@@ -48,6 +51,58 @@ from utils.general import (LOGGER, Profile, check_file, check_img_size, check_im
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
+
+
+
+MQTT_SERVER = "io.adafruit.com"
+MQTT_PORT = 1883
+MQTT_USERNAME = "hungnguyen2509"
+MQTT_PASSWORD = "aio_pCda925bfQWZ4qnt50zGBoRBYV1x"
+MQTT_FEED1= "hungnguyen2509/feeds/projectxt2.detectname"
+MQTT_FEED4= "hungnguyen2509/feeds/projectxt2.detectresult"
+MQTT_FEED5= "hungnguyen2509/feeds/projectxt2.detectcam"
+Auth = 0
+
+
+
+def mqtt_connected(client, userdata, flags, rc):
+    client.subscribe(MQTT_FEED1)
+    # client.subscribe(MQTT_FEED2)
+    # client.subscribe(MQTT_FEED3)
+    client.subscribe(MQTT_FEED4)
+    client.subscribe(MQTT_FEED5)
+    print("Connected succesfully!!")
+
+
+def mqtt_subscribed(client, userdata, mid, granted_qos):
+    print("Subscribed to Topic!!!")
+
+def disconnected(client):
+    print("Ngat ket noi ...")
+    sys.exit (1)
+def on_message(client, userdata, msg):
+    if (msg.topic==MQTT_FEED4) :
+        global Auth
+        Auth=str(msg.payload.decode())
+
+
+
+#Register mqtt events
+mqttClient = mqtt.Client()
+mqttClient.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+mqttClient.connect(MQTT_SERVER, MQTT_PORT, 60)
+
+#Register mqtt events
+mqttClient.on_connect = mqtt_connected
+mqttClient.on_disconnect = disconnected
+mqttClient.on_subscribe = mqtt_subscribed
+mqttClient.on_message= on_message
+
+
+mqttClient.loop_start()
+
+
+
 
 
 @smart_inference_mode()
@@ -114,6 +169,18 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
+    count=0
+    
+
+    ##################################
+    print("Waiting for level 1 authentication")
+    while(not Auth):
+        pass
+    print("Pass level 1 authentication")
+    ##################################
+    
+
+
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -139,14 +206,15 @@ def run(
             seen += 1
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
-                s += f'{i}: '
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
+
+            
 
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
-            s += '%gx%g ' % im.shape[2:]  # print string
+            #s += '%gx%g ' % im.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
@@ -157,7 +225,7 @@ def run(
                 # Print results
                 for c in det[:, 5].unique():
                     n = (det[:, 5] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                    s += f"{names[int(c)]}"  # add to string
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -174,7 +242,7 @@ def run(
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
-            # Stream results
+            #Stream results
             im0 = annotator.result()
             if view_img:
                 if platform.system() == 'Linux' and p not in windows:
@@ -184,36 +252,54 @@ def run(
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
 
-            # Save results (image with detections)
-            if save_img:
-                if dataset.mode == 'image':
-                    cv2.imwrite(save_path, im0)
-                else:  # 'video' or 'stream'
-                    if vid_path[i] != save_path:  # new video
-                        vid_path[i] = save_path
-                        if isinstance(vid_writer[i], cv2.VideoWriter):
-                            vid_writer[i].release()  # release previous video writer
-                        if vid_cap:  # video
-                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        else:  # stream
-                            fps, w, h = 30, im0.shape[1], im0.shape[0]
-                        save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
-                        vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                    vid_writer[i].write(im0)
-
+            # # Save results (image with detections)
+            # if save_img:
+            #     if dataset.mode == 'image':
+            #         cv2.imwrite(save_path, im0)
+            #     else:  # 'video' or 'stream'
+            #         if vid_path[i] != save_path:  # new video
+            #             vid_path[i] = save_path
+            #             if isinstance(vid_writer[i], cv2.VideoWriter):
+            #                 vid_writer[i].release()  # release previous video writer
+            #             if vid_cap:  # video
+            #                 fps = vid_cap.get(cv2.CAP_PROP_FPS)
+            #                 w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            #                 h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            #             else:  # stream
+            #                 fps, w, h = 30, im0.shape[1], im0.shape[0]
+            #             save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+            #             vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+            #         vid_writer[i].write(im0)
         # Print time (inference-only)
-        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
+        #LOGGER.info(f"{s} ")
+
+        
+
+        count+=1
+        if count==50:
+            
+            if(s in ["hau","hung","An"]):
+                mqttClient.publish(MQTT_FEED1,s)
+                mqttClient.publish(MQTT_FEED4,2)
+            data = cv2.resize(imc, dsize=(400, 400))
+            res, up_img = cv2.imencode('.jpg',data)
+            up_img = base64.b64encode(up_img)
+            mqttClient.publish(MQTT_FEED5, up_img)
+            print("Published!")
+            count=0
+
+
+
+        	
 
     # Print results
-    t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
-    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
-    if save_txt or save_img:
-        s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
-        LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
-    if update:
-        strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
+    # t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
+    # LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
+    # if save_txt or save_img:
+    #     s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
+    #     LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
+    # if update:
+    #     strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
 
 def parse_opt():
