@@ -8,3 +8,7 @@ pip install -r yolov5/requirements.txt
 ```bash
 python yolov5/detect.py --weights yolov5/final.pt --source 0                               # webcam
 ```
+# Command to run dashboard :
+```bash
+python manage.py runserver
+```
