@@ -1,5 +1,7 @@
 # XT2_Project
 
+https://docs.google.com/presentation/d/1uXGy0M2EMZHgkufpdAbKG2jpcsbItJ0lZmSx-nGQkr4/edit?usp=sharing
+
 # Requirement to run the package
 ```bash
 pip install -r yolov5/requirements.txt 
