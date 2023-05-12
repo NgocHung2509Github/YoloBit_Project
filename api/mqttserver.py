@@ -8,7 +8,7 @@ import json
 MQTT_SERVER = "io.adafruit.com"
 MQTT_PORT = 1883
 MQTT_USERNAME = "hungnguyen2509"
-MQTT_PASSWORD = "aio_yUCz712mbnGye5IZLvnaIW4qthtf"
+MQTT_PASSWORD = "aio_pCda925bfQWZ4qnt50zGBoRBYV1x"
 MQTT_FEEDS= ['projectxt2.fanswitch', 'projectxt2.lightswitch', 'projectxt2.temperature', 'projectxt2.detectresult', 'projectxt2.detectname']
 PATH = 'hungnguyen2509/feeds/'
 
